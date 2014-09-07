@@ -11,15 +11,15 @@ var Settings = require('settings');
 var receipts = [];
 
 var NothingYet = new UI.Card({
-  title: 'Pebble.js',
+  title: 'BIZ or NOT',
   icon: 'images/menu_icon.png',
-  subtitle: 'Nothing to show :(',
-  body: 'Press any button.'
+  subtitle: 'No receipts',
+  body: 'Press any button to reload'
 });
 
-NothingYet.on('click', 'select', function(e) {
-  start();
-});
+NothingYet.on('click', 'select', start);
+NothingYet.on('click', 'up', start);
+NothingYet.on('click', 'down', start);
 NothingYet.show();
 
 function getReceipts(cb) {
@@ -82,7 +82,7 @@ function nextCard () {
 
 function showReceipt(receipt) {
   var card = new UI.Card({
-    title: 'Pebble.js',
+    title: 'BIZ or NOT',
     icon: 'images/menu_icon.png',
     subtitle: receipt.name,
     body: 'Press any button.'
@@ -91,7 +91,7 @@ function showReceipt(receipt) {
   card.show();
 
   card.on('click', 'up', function(e) {
-    card.body("Pressed");
+    card.title("BIZ");
     postAnswer(receipt.id, true, function(err, result) {
       if (err) return console.log('error');
 
@@ -101,6 +101,7 @@ function showReceipt(receipt) {
     });
   });
   card.on('click', 'down', function(e) {
+    card.title("NOT");
     postAnswer(receipt.id, false, function(err, result) {
       if (err) return console.log('error');
       
