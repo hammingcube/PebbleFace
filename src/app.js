@@ -20,6 +20,7 @@ var NothingYet = new UI.Card({
 NothingYet.on('click', 'select', function(e) {
   start();
 });
+NothingYet.show();
 
 function getReceipts(cb) {
   
@@ -72,14 +73,14 @@ function start() {
 
 function nextCard () {
   receipts.pop();
-  if (receipts.length)
-    showReceipt();
-  else
+  if (receipts.length) {
+    showReceipt(lastReceipt());
+  } else {
     showNothingYet();
+  }
 }
 
 function showReceipt(receipt) {
-  NothingYet.hide();
   var card = new UI.Card({
     title: 'Pebble.js',
     icon: 'images/menu_icon.png',
@@ -90,9 +91,11 @@ function showReceipt(receipt) {
   card.show();
 
   card.on('click', 'up', function(e) {
+    card.body("Pressed");
     postAnswer(receipt.id, true, function(err, result) {
       if (err) return console.log('error');
-      
+
+      card.hide();
       nextCard();
       
     });
@@ -101,6 +104,7 @@ function showReceipt(receipt) {
     postAnswer(receipt.id, false, function(err, result) {
       if (err) return console.log('error');
       
+      card.hide();
       nextCard();
       
     });
