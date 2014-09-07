@@ -3,12 +3,10 @@
  *
  * This is where you write your app.
  */
-
+/* global setInterval */
 var UI = require('ui');
 var ajax = require('ajax');
 var Settings = require('settings');
-
-var receipts = [];
 
 var NothingYet = new UI.Card({
   title: 'BIZ or NOT',
@@ -29,12 +27,25 @@ function getReceipts(cb) {
     type: 'json'
   },
   function(data) {
-    console.log(data, JSON.stringify(data));
-    Settings.data('receipts', data.receipts);
-    cb(null);
+    
+    var receipts = Settings.data('receipts');
+
+    var existing = receipts.reduce(function(map, r) {
+      map[r.id] = r;
+      return map;
+    }, {});
+    
+    data.receipts.forEach(function(r) {
+      if (!existing[r.id]) {
+        receipts.push(r);
+      }
+    });
+    
+    Settings.data('receipts', receipts);
+    if (cb) cb(null);
   },
   function(data) {
-    cb(data);
+    if (cb) cb(data);
   });
   
 }
@@ -57,12 +68,13 @@ function postAnswer(id, answer, cb) {
 }
 
 function lastReceipt () {
+  var receipts = Settings.data('receipts');
   return receipts[receipts.length - 1];
 }
 
 function start() {
   getReceipts(function() {
-    receipts = Settings.data('receipts') || [];
+    var receipts = Settings.data('receipts') || [];
     if (receipts.length) {
       showReceipt(lastReceipt());
     } else {
@@ -72,7 +84,9 @@ function start() {
 }
 
 function nextCard () {
+  var receipts = Settings.data('receipts');
   receipts.pop();
+  Settings.data('receipts', receipts);
   if (receipts.length) {
     showReceipt(lastReceipt());
   } else {
@@ -117,3 +131,5 @@ function showNothingYet() {
 }
 
 start();
+setInterval(getReceipts, 2000);
+
