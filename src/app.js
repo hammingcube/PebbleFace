@@ -10,6 +10,17 @@ var Settings = require('settings');
 
 var receipts = [];
 
+var NothingYet = new UI.Card({
+  title: 'Pebble.js',
+  icon: 'images/menu_icon.png',
+  subtitle: 'Nothing to show :(',
+  body: 'Press any button.'
+});
+
+NothingYet.on('click', 'select', function(e) {
+  start();
+});
+
 function getReceipts(cb) {
   
   ajax({
@@ -17,7 +28,8 @@ function getReceipts(cb) {
     type: 'json'
   },
   function(data) {
-    Settings.data('receipts', data.contents);
+    console.log(data, JSON.stringify(data));
+    Settings.data('receipts', data.receipts);
     cb(null);
   },
   function(data) {
@@ -58,8 +70,16 @@ function start() {
   });
 }
 
+function nextCard () {
+  receipts.pop();
+  if (receipts.length)
+    showReceipt();
+  else
+    showNothingYet();
+}
+
 function showReceipt(receipt) {
-  
+  NothingYet.hide();
   var card = new UI.Card({
     title: 'Pebble.js',
     icon: 'images/menu_icon.png',
@@ -73,29 +93,22 @@ function showReceipt(receipt) {
     postAnswer(receipt.id, true, function(err, result) {
       if (err) return console.log('error');
       
-      receipts.pop();
-      if (receipts.length)
-        showReceipt();
-      else
-        showNothingYet();
+      nextCard();
+      
+    });
+  });
+  card.on('click', 'down', function(e) {
+    postAnswer(receipt.id, false, function(err, result) {
+      if (err) return console.log('error');
+      
+      nextCard();
       
     });
   });
 }
 
 function showNothingYet() {
-  var card = new UI.Card({
-    title: 'Pebble.js',
-    icon: 'images/menu_icon.png',
-    subtitle: 'Nothing to show :(',
-    body: 'Press any button.'
-  });
-  
-  card.show();
-
-  card.on('click', 'select', function(e) {
-    start();
-  });
+  NothingYet.show();
 }
 
 start();
